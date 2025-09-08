@@ -16,7 +16,7 @@
       max-width: 500px;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
-    input, textarea, button {
+    input, button {
       width: 100%;
       margin-top: 10px;
       padding: 10px;
@@ -24,10 +24,6 @@
       border: 1px solid #ccc;
       font-size: 16px;
       box-sizing: border-box;
-    }
-    textarea {
-      height: 160px;
-      resize: vertical;
     }
     .btn-row {
       display: flex;
@@ -49,7 +45,7 @@
     .radio-group {
       margin-top: 15px;
       display: flex;
-      gap: 20px; /* spacing between options */
+      gap: 20px;
       align-items: center;
     }
     .radio-group label {
@@ -58,11 +54,8 @@
       cursor: pointer;
       gap: 6px;
     }
-    .small-note {
-      font-size: 13px;
-      color: #555;
-      margin-top: 6px;
-    }
+    /* Hide generated message field */
+    #output { display: none; }
   </style>
 </head>
 <body>
@@ -83,9 +76,8 @@
       <label><input type="radio" name="orderType" value="delivery"> Delivery</label>
     </div><br/><br/>
 
-    <label for="output">Generated Message (payment):</label>
+    <!-- Hidden generated message -->
     <textarea id="output" readonly></textarea>
-    <div class="small-note">Message auto-generates when Order ID & Amount are filled.</div>
 
     <div class="btn-row">
       <button onclick="sendWhatsApp()">Asking for payment</button>
@@ -101,12 +93,9 @@
     const amountEl = document.getElementById('amount');
     const outputEl = document.getElementById('output');
 
-    // attach listeners - auto-generate when typing/pasting
     [orderIdEl, amountEl].forEach(el => el.addEventListener('input', generateMessage));
-    // also regenerate when radio changes
     document.querySelectorAll('input[name="orderType"]').forEach(r => r.addEventListener('change', generateMessage));
 
-    // Build payment request message
     function generateMessage() {
       const orderId = orderIdEl.value.trim();
       const amount = amountEl.value.trim();
@@ -129,9 +118,8 @@ Thank you for your support!`;
       }
     }
 
-    // Ensure message is generated before sending
     function sendWhatsApp() {
-      generateMessage(); // guarantee output is up-to-date
+      generateMessage();
       const phone = phoneEl.value.trim();
       const message = outputEl.value;
 
@@ -139,7 +127,6 @@ Thank you for your support!`;
         alert('Please enter phone number, order ID, and amount first.');
         return;
       }
-      // open wa.me
       const url = `https://wa.me/${sanitizePhone(phone)}?text=${encodeURIComponent(message)}`;
       window.open(url, '_blank');
     }
@@ -170,17 +157,13 @@ Thank you for your support!`;
       window.open(url, '_blank');
     }
 
-    // Simple phone sanitizer: convert leading 0 to 60 (Malaysian), remove non-digits
     function sanitizePhone(raw) {
-      let s = raw.replace(/[^\d+]/g, ''); // keep digits and plus
-      // if starts with +, remove + for wa.me
+      let s = raw.replace(/[^\d+]/g, '');
       if (s.startsWith('+')) s = s.slice(1);
-      // convert local 0xxx -> 60xxx
       if (/^0\d+/.test(s)) s = '6' + s;
       return s;
     }
 
-    // initial call in case fields pre-filled
     generateMessage();
   </script>
 </body>
