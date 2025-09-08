@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>WhatsApp Message Generator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+      background: #f5f5f5;
+    }
+    .container {
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      max-width: 500px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    input, textarea, button {
+      width: 100%;
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+    textarea {
+      height: 160px;
+      resize: vertical;
+    }
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .btn-row button {
+      flex: 1;
+      background: #25D366;
+      color: white;
+      border: none;
+      cursor: pointer;
+      padding: 10px;
+      border-radius: 8px;
+    }
+    .btn-row button.secondary { background: #1da851; }
+    .btn-row button.danger { background: #f05a5a; }
+    .btn-row button:hover { opacity: 0.95; }
+    .radio-group {
+      margin-top: 15px;
+      display: flex;
+      gap: 20px; /* spacing between options */
+      align-items: center;
+    }
+    .radio-group label {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      gap: 6px;
+    }
+    .small-note {
+      font-size: 13px;
+      color: #555;
+      margin-top: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>WhatsApp Message Generator</h2>
+
+    <label for="phone">Customer Phone Number:</label>
+    <input type="text" id="phone" placeholder="e.g. 60123456789"><br/><br/>
+
+    <label for="orderId">Order ID:</label>
+    <input type="text" id="orderId" placeholder="Enter Order ID"><br/><br/>
+
+    <label for="amount">Amount (RM):</label>
+    <input type="text" id="amount" placeholder="Enter Amount (e.g. 30.00)"><br/><br/>
+
+    <div class="radio-group" title="Select order type">
+      <label><input type="radio" name="orderType" value="pickup" checked> Pickup</label>
+      <label><input type="radio" name="orderType" value="delivery"> Delivery</label>
+    </div><br/><br/>
+
+    <label for="output">Generated Message (payment):</label>
+    <textarea id="output" readonly></textarea>
+    <div class="small-note">Message auto-generates when Order ID & Amount are filled.</div>
+
+    <div class="btn-row">
+      <button onclick="sendWhatsApp()">Asking for payment</button>
+      <button class="secondary" onclick="sendReadyMessage()">Order is Ready</button>
+      <button class="danger" onclick="sendCompleteMessage()">Order is Complete</button>
+    </div>
+  </div>
+
+  <script>
+    // Elements
+    const phoneEl = document.getElementById('phone');
+    const orderIdEl = document.getElementById('orderId');
+    const amountEl = document.getElementById('amount');
+    const outputEl = document.getElementById('output');
+
+    // attach listeners - auto-generate when typing/pasting
+    [orderIdEl, amountEl].forEach(el => el.addEventListener('input', generateMessage));
+    // also regenerate when radio changes
+    document.querySelectorAll('input[name="orderType"]').forEach(r => r.addEventListener('change', generateMessage));
+
+    // Build payment request message
+    function generateMessage() {
+      const orderId = orderIdEl.value.trim();
+      const amount = amountEl.value.trim();
+
+      if (orderId && amount) {
+        const message =
+`Thank you for your order with Wedrink Lintas Plaza!
+
+Order ID: *${orderId}*
+Total Amount: *RM${amount}*
+
+Please make the payment by scanning the QR code.
+
+Kindly send us the payment slip. Your order will be prepared once payment is received.
+
+Thank you for your support!`;
+        outputEl.value = message;
+      } else {
+        outputEl.value = '';
+      }
+    }
+
+    // Ensure message is generated before sending
+    function sendWhatsApp() {
+      generateMessage(); // guarantee output is up-to-date
+      const phone = phoneEl.value.trim();
+      const message = outputEl.value;
+
+      if (!phone || !message) {
+        alert('Please enter phone number, order ID, and amount first.');
+        return;
+      }
+      // open wa.me
+      const url = `https://wa.me/${sanitizePhone(phone)}?text=${encodeURIComponent(message)}`;
+      window.open(url, '_blank');
+    }
+
+    function sendReadyMessage() {
+      const phone = phoneEl.value.trim();
+      if (!phone) { alert('Please enter customer phone number.'); return; }
+
+      const orderType = document.querySelector('input[name="orderType"]:checked').value;
+      let message = '';
+      if (orderType === 'pickup') {
+        message = 'Hi, your order is ready for pickup at Wedrink Lintas Plaza. See you soon!';
+      } else {
+        message = 'Hi, your order is on the way. It will arrive in about 10 minutes. Thank you!';
+      }
+
+      const url = `https://wa.me/${sanitizePhone(phone)}?text=${encodeURIComponent(message)}`;
+      window.open(url, '_blank');
+    }
+
+    function sendCompleteMessage() {
+      const phone = phoneEl.value.trim();
+      const orderId = orderIdEl.value.trim();
+      if (!phone || !orderId) { alert('Please enter customer phone number and order ID.'); return; }
+
+      const message = `Your order (Order ID: *${orderId}*) is now complete. Thank you for choosing Wedrink Lintas Plaza! We hope to serve you again soon.`;
+      const url = `https://wa.me/${sanitizePhone(phone)}?text=${encodeURIComponent(message)}`;
+      window.open(url, '_blank');
+    }
+
+    // Simple phone sanitizer: convert leading 0 to 60 (Malaysian), remove non-digits
+    function sanitizePhone(raw) {
+      let s = raw.replace(/[^\d+]/g, ''); // keep digits and plus
+      // if starts with +, remove + for wa.me
+      if (s.startsWith('+')) s = s.slice(1);
+      // convert local 0xxx -> 60xxx
+      if (/^0\d+/.test(s)) s = '6' + s;
+      return s;
+    }
+
+    // initial call in case fields pre-filled
+    generateMessage();
+  </script>
+</body>
+</html>
