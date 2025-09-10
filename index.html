@@ -4,23 +4,29 @@
   <meta charset="UTF-8" />
   <title>Wedrink Lintas Plaza - Contact Customer</title>
   <style>
+    * {
+      box-sizing: border-box;
+    }
     body {
       font-family: Arial, sans-serif;
       margin: 0;
       background: #f5f5f5;
+      height: 100vh;
       display: flex;
       justify-content: center;
-      align-items: flex-start;
-      min-height: 100vh;
-      padding: 20px;
+      align-items: center;
     }
     .container {
       background: #fff;
       padding: 30px;
-      border-radius: 12px;
+      border-radius: 0; /* remove rounded edges for full screen */
       width: 100%;
-      max-width: 600px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      height: 100%;
+      box-shadow: none; /* optional: remove shadow since it’s full screen */
+      overflow-y: auto; /* allow scrolling if content too tall */
+    }
+    h2 {
+      margin-top: 0;
     }
     label {
       display: block;
@@ -34,7 +40,6 @@
       border-radius: 8px;
       border: 1px solid #ccc;
       font-size: 16px;
-      box-sizing: border-box;
     }
     .radio-group {
       margin-top: 10px;
@@ -50,7 +55,6 @@
       gap: 6px;
       margin: 0;
     }
-    /* Hide generated message field */
     #output { display: none; }
 
     .btn-row {
@@ -69,23 +73,18 @@
       transition: background 0.2s ease;
     }
 
-    /* Bright green for Payment */
     .btn-row button.payment {
       background: #2ecc71;
     }
     .btn-row button.payment:hover {
       background: #28b862;
     }
-
-    /* Medium green for Ready */
     .btn-row button.ready {
       background: #27ae60;
     }
     .btn-row button.ready:hover {
       background: #219150;
     }
-
-    /* Dark green for Complete */
     .btn-row button.complete {
       background: #1e8449;
     }
@@ -112,7 +111,6 @@
       <label><input type="radio" name="orderType" value="delivery"> Delivery</label>
     </div>
 
-    <!-- Hidden generated message -->
     <textarea id="output" readonly></textarea>
 
     <div class="btn-row">
@@ -123,7 +121,6 @@
   </div>
 
   <script>
-    // Elements
     const phoneEl = document.getElementById('phone');
     const orderIdEl = document.getElementById('orderId');
     const amountEl = document.getElementById('amount');
@@ -137,7 +134,7 @@
       const amount = amountEl.value.trim();
 
       if (orderId && amount) {
-        const message =
+        outputEl.value =
 `Thank you for your order with Wedrink Lintas Plaza!
 
 Order ID: *${orderId}*
@@ -148,7 +145,6 @@ Please make the payment by scanning the QR code.
 Kindly send us the payment slip. Your order will be prepared once payment is received.
 
 Thank you for your support!`;
-        outputEl.value = message;
       } else {
         outputEl.value = '';
       }
