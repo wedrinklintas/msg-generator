@@ -2,87 +2,123 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>WhatsApp Message Generator</title>
+  <title>Wedrink Lintas Plaza - Contact Customer</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      margin: 40px;
+      margin: 0;
       background: #f5f5f5;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 20px;
     }
     .container {
       background: #fff;
-      padding: 20px;
+      padding: 30px;
       border-radius: 12px;
-      max-width: 500px;
+      width: 100%;
+      max-width: 600px;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
-    input, button {
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: bold;
+    }
+    input {
       width: 100%;
-      margin-top: 10px;
-      padding: 10px;
+      margin-bottom: 20px;
+      padding: 12px;
       border-radius: 8px;
       border: 1px solid #ccc;
       font-size: 16px;
       box-sizing: border-box;
     }
-    .btn-row {
-      display: flex;
-      gap: 10px;
-      margin-top: 10px;
-    }
-    .btn-row button {
-      flex: 1;
-      background: #25D366;
-      color: white;
-      border: none;
-      cursor: pointer;
-      padding: 10px;
-      border-radius: 8px;
-    }
-    .btn-row button.secondary { background: #1da851; }
-    .btn-row button.danger { background: #f05a5a; }
-    .btn-row button:hover { opacity: 0.95; }
     .radio-group {
-      margin-top: 15px;
+      margin-top: 10px;
       display: flex;
       gap: 20px;
       align-items: center;
+      margin-bottom: 20px;
     }
     .radio-group label {
       display: flex;
       align-items: center;
       cursor: pointer;
       gap: 6px;
+      margin: 0;
     }
     /* Hide generated message field */
     #output { display: none; }
+
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    .btn-row button {
+      flex: 1;
+      color: white;
+      border: none;
+      cursor: pointer;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: background 0.2s ease;
+    }
+
+    /* Bright green for Payment */
+    .btn-row button.payment {
+      background: #2ecc71;
+    }
+    .btn-row button.payment:hover {
+      background: #28b862;
+    }
+
+    /* Medium green for Ready */
+    .btn-row button.ready {
+      background: #27ae60;
+    }
+    .btn-row button.ready:hover {
+      background: #219150;
+    }
+
+    /* Dark green for Complete */
+    .btn-row button.complete {
+      background: #1e8449;
+    }
+    .btn-row button.complete:hover {
+      background: #166b39;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>WhatsApp Message Generator</h2>
+    <h2>Wedrink Lintas Plaza - Contact Customer</h2>
 
     <label for="phone">Customer Phone Number:</label>
-    <input type="text" id="phone" placeholder="e.g. 60123456789"><br/><br/>
+    <input type="text" id="phone" placeholder="e.g. 60123456789">
 
     <label for="orderId">Order ID:</label>
-    <input type="text" id="orderId" placeholder="Enter Order ID"><br/><br/>
+    <input type="text" id="orderId" placeholder="Enter Order ID">
 
     <label for="amount">Amount (RM):</label>
-    <input type="text" id="amount" placeholder="Enter Amount (e.g. 30.00)"><br/><br/>
+    <input type="text" id="amount" placeholder="Enter Amount (e.g. 30.00)">
 
     <div class="radio-group" title="Select order type">
       <label><input type="radio" name="orderType" value="pickup" checked> Pickup</label>
       <label><input type="radio" name="orderType" value="delivery"> Delivery</label>
-    </div><br/><br/>
+    </div>
 
     <!-- Hidden generated message -->
     <textarea id="output" readonly></textarea>
 
     <div class="btn-row">
-      <button onclick="sendWhatsApp()">Asking for payment</button>
-      <button class="secondary" onclick="sendReadyMessage()">Order is Ready</button>
-      <button class="danger" onclick="sendCompleteMessage()">Order is Complete</button>
+      <button class="payment" onclick="sendWhatsApp()">Asking for payment</button>
+      <button class="ready" onclick="sendReadyMessage()">Order is Ready</button>
+      <button class="complete" onclick="sendCompleteMessage()">Order is Complete</button>
     </div>
   </div>
 
@@ -133,14 +169,15 @@ Thank you for your support!`;
 
     function sendReadyMessage() {
       const phone = phoneEl.value.trim();
-      if (!phone) { alert('Please enter customer phone number.'); return; }
+      const orderId = orderIdEl.value.trim();
+      if (!phone || !orderId) { alert('Please enter customer phone number and order ID.'); return; }
 
       const orderType = document.querySelector('input[name="orderType"]:checked').value;
       let message = '';
       if (orderType === 'pickup') {
-        message = 'Hi, your order is ready for pickup at Wedrink Lintas Plaza. See you soon!';
+        message = `Hi, your order (Order ID: *${orderId}*) is ready for pickup at Wedrink Lintas Plaza. See you soon!`;
       } else {
-        message = 'Hi, your order is on the way. It will arrive in about 10 minutes. Thank you!';
+        message = `Hi, your order (Order ID: *${orderId}*) is on the way. It will arrive in about 10 minutes. Thank you!`;
       }
 
       const url = `https://wa.me/${sanitizePhone(phone)}?text=${encodeURIComponent(message)}`;
